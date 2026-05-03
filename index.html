@@ -6,27 +6,27 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="format-detection" content="telephone=no">
-    <meta name="theme-color" content="#C41E3A">
+    <meta name="theme-color" content="#3370FF">
     <title>证书查询平台</title>
     <style>
-        /* ========== 设计令牌：中国红 + 白 ========== */
+        /* ========== 设计令牌：钉钉蓝 + 白 ========== */
         :root {
-            --china-red: #C41E3A;
-            --china-red-dark: #9B1B30;
-            --china-red-light: #E85D75;
-            --china-red-glow: rgba(196, 30, 58, 0.18);
+            --ding-blue: #3370FF;
+            --ding-blue-dark: #165DFF;
+            --ding-blue-light: #85A5FF;
+            --ding-blue-glow: rgba(51, 112, 255, 0.18);
             --white: #FFFFFF;
             --off-white: #FAFAFA;
-            --ivory: #F5F0EB;
+            --ivory: #F5F7FA;
             --text-primary: #1A1A1A;
             --text-secondary: #666666;
             --text-tertiary: #999999;
-            --border: rgba(196, 30, 58, 0.12);
+            --border: rgba(51, 112, 255, 0.12);
             --radius-sm: 12px;
             --radius-md: 16px;
             --radius-lg: 24px;
-            --shadow: 0 4px 20px rgba(196, 30, 58, 0.08);
-            --shadow-lg: 0 8px 32px rgba(196, 30, 58, 0.12);
+            --shadow: 0 4px 20px rgba(51, 112, 255, 0.08);
+            --shadow-lg: 0 8px 32px rgba(51, 112, 255, 0.12);
         }
 
         * {
@@ -63,7 +63,7 @@
             left: 0;
             right: 0;
             height: env(safe-area-inset-top, 0px);
-            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            background: linear-gradient(135deg, var(--ding-blue) 0%, var(--ding-blue-dark) 100%);
             z-index: 100;
         }
 
@@ -94,14 +94,13 @@
 
         /* ========== 头部 ========== */
         .app-header {
-            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
-            padding: calc(env(safe-area-inset-top, 0px) + 20px) 24px 32px;
+            background: linear-gradient(135deg, var(--ding-blue) 0%, var(--ding-blue-dark) 100%);
+            padding: calc(env(safe-area-inset-top, 0px) + 32px) 24px 32px;
             text-align: center;
             position: relative;
             overflow: hidden;
         }
 
-        /* 头部装饰纹理 */
         .app-header::before {
             content: '';
             position: absolute;
@@ -190,7 +189,7 @@
         .input-label .label-dot {
             width: 6px;
             height: 6px;
-            background: var(--china-red);
+            background: var(--ding-blue);
             border-radius: 50%;
             flex-shrink: 0;
         }
@@ -218,7 +217,6 @@
             appearance: none;
         }
 
-        /* 鸿蒙/安卓数字键盘优化 */
         .input-wrap input::-webkit-outer-spin-button,
         .input-wrap input::-webkit-inner-spin-button {
             -webkit-appearance: none;
@@ -226,9 +224,9 @@
         }
 
         .input-wrap input:focus {
-            border-color: var(--china-red);
+            border-color: var(--ding-blue);
             background: var(--white);
-            box-shadow: 0 0 0 4px var(--china-red-glow), var(--shadow);
+            box-shadow: 0 0 0 4px var(--ding-blue-glow), var(--shadow);
         }
 
         .input-wrap input::placeholder {
@@ -249,7 +247,7 @@
         .btn-query {
             width: 100%;
             height: clamp(52px, 13vw, 60px);
-            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            background: linear-gradient(135deg, var(--ding-blue) 0%, var(--ding-blue-dark) 100%);
             color: var(--white);
             border: none;
             border-radius: var(--radius-md);
@@ -259,7 +257,7 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            box-shadow: 0 4px 16px rgba(196, 30, 58, 0.25);
+            box-shadow: 0 4px 16px rgba(51, 112, 255, 0.25);
             transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
             margin-top: clamp(8px, 2vw, 16px);
             display: flex;
@@ -270,7 +268,7 @@
 
         .btn-query:active {
             transform: scale(0.97);
-            box-shadow: 0 2px 8px rgba(196, 30, 58, 0.15);
+            box-shadow: 0 2px 8px rgba(51, 112, 255, 0.15);
         }
 
         .btn-query::after {
@@ -335,7 +333,7 @@
         .form-footer .divider {
             width: 40px;
             height: 2px;
-            background: linear-gradient(90deg, transparent, var(--china-red-light), transparent);
+            background: linear-gradient(90deg, transparent, var(--ding-blue-light), transparent);
             margin: 12px auto;
             border-radius: 1px;
         }
@@ -481,33 +479,7 @@
         }
 
         .viewer-footer {
-            position: absolute;
-            bottom: max(12px, env(safe-area-inset-bottom));
-            left: 0; right: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 8px;
-            z-index: 10;
-            pointer-events: none;
-        }
-
-        .viewer-footer .hint-pill {
-            background: rgba(255,255,255,0.08);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            color: rgba(255,255,255,0.65);
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-size: clamp(11px, 3vw, 12px);
-            border: 1px solid rgba(255,255,255,0.05);
-            opacity: 0;
-            animation: fadeInHint 0.5s ease 0.3s forwards;
-            white-space: nowrap;
-        }
-
-        @keyframes fadeInHint {
-            to { opacity: 1; }
+            display: none; /* 隐藏底部提示语 */
         }
 
         /* ========== 小屏手机特别适配 ========== */
@@ -528,7 +500,6 @@
             }
         }
 
-        /* ========== 超小屏（iPhone SE / 鸿蒙小屏） ========== */
         @media (max-height: 600px) {
             .app-header {
                 padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
@@ -550,7 +521,6 @@
             }
         }
 
-        /* ========== 大屏手机（Pro Max / 安卓大屏） ========== */
         @media (min-height: 850px) {
             .form-section {
                 padding-top: 40px;
@@ -562,7 +532,6 @@
             }
         }
 
-        /* ========== 横屏提示 ========== */
         @media (orientation: landscape) and (max-height: 500px) {
             .app-shell {
                 flex-direction: row;
@@ -588,7 +557,6 @@
     <div class="app-shell">
         <!-- 头部 -->
         <header class="app-header">
-            <div class="header-badge">📜</div>
             <h1>证书查询平台</h1>
             <p class="subtitle">Certificate Verification System</p>
         </header>
@@ -640,17 +608,14 @@
     <!-- 图片查看器 -->
     <div class="viewer-overlay" id="viewer">
         <div class="viewer-header">
-            <div class="viewer-title">📜 证书查询结果</div>
+            <div class="viewer-title">证书查询结果</div>
             <div class="viewer-close" onclick="closeViewer()">×</div>
         </div>
         <div class="viewer-body" id="viewerBody">
             <div class="viewer-skeleton" id="viewerSkeleton"></div>
             <img id="certImage" src="" alt="证书图片" draggable="false">
         </div>
-        <div class="viewer-footer">
-            <div class="hint-pill">长按图片可保存至相册</div>
-            <div class="hint-pill" style="animation-delay: 0.5s;">双击放大 · 下滑关闭</div>
-        </div>
+        <div class="viewer-footer"></div>
     </div>
 
     <script>
