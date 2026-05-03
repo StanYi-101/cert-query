@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <meta name="theme-color" content="#C41E3A">
+    <title>证书查询平台</title>
+    <style>
+        /* ========== 设计令牌：中国红 + 白 ========== */
+        :root {
+            --china-red: #C41E3A;
+            --china-red-dark: #9B1B30;
+            --china-red-light: #E85D75;
+            --china-red-glow: rgba(196, 30, 58, 0.18);
+            --white: #FFFFFF;
+            --off-white: #FAFAFA;
+            --ivory: #F5F0EB;
+            --text-primary: #1A1A1A;
+            --text-secondary: #666666;
+            --text-tertiary: #999999;
+            --border: rgba(196, 30, 58, 0.12);
+            --radius-sm: 12px;
+            --radius-md: 16px;
+            --radius-lg: 24px;
+            --shadow: 0 4px 20px rgba(196, 30, 58, 0.08);
+            --shadow-lg: 0 8px 32px rgba(196, 30, 58, 0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+        }
+
+        html {
+            -webkit-text-size-adjust: 100%;
+            text-size-adjust: 100%;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans SC", sans-serif;
+            background: var(--off-white);
+            min-height: 100dvh;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ========== 顶部装饰条（适配刘海屏） ========== */
+        .status-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: env(safe-area-inset-top, 0px);
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            z-index: 100;
+        }
+
+        /* ========== 主容器：全尺寸响应式 ========== */
+        .app-shell {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100dvh;
+            background: var(--white);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: var(--shadow-lg);
+        }
+
+        @media (min-width: 481px) {
+            body {
+                align-items: center;
+                padding: 20px;
+                background: linear-gradient(135deg, var(--ivory) 0%, var(--off-white) 100%);
+            }
+            .app-shell {
+                min-height: auto;
+                border-radius: var(--radius-lg);
+                overflow: hidden;
+            }
+        }
+
+        /* ========== 头部 ========== */
+        .app-header {
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            padding: calc(env(safe-area-inset-top, 0px) + 20px) 24px 32px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 头部装饰纹理 */
+        .app-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 70%, rgba(255,255,255,0.08) 0%, transparent 50%),
+                        radial-gradient(circle at 70% 30%, rgba(255,255,255,0.05) 0%, transparent 40%);
+            pointer-events: none;
+        }
+
+        .header-badge {
+            width: clamp(56px, 15vw, 72px);
+            height: clamp(56px, 15vw, 72px);
+            background: var(--white);
+            border-radius: 50%;
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(28px, 7vw, 36px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-badge::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.3);
+            animation: badgePulse 2.5s ease-in-out infinite;
+        }
+
+        @keyframes badgePulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.08); opacity: 0; }
+        }
+
+        .app-header h1 {
+            color: var(--white);
+            font-size: clamp(22px, 5.5vw, 28px);
+            font-weight: 700;
+            letter-spacing: 3px;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .app-header .subtitle {
+            color: rgba(255,255,255,0.75);
+            font-size: clamp(11px, 3vw, 13px);
+            margin-top: 6px;
+            font-weight: 400;
+            letter-spacing: 1px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ========== 表单区域 ========== */
+        .form-section {
+            padding: clamp(24px, 6vw, 36px) clamp(20px, 5vw, 32px);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: clamp(16px, 4vw, 24px);
+        }
+
+        .input-group {
+            text-align: left;
+        }
+
+        .input-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: clamp(13px, 3.5vw, 15px);
+            color: var(--text-secondary);
+            margin-bottom: clamp(8px, 2vw, 12px);
+            font-weight: 500;
+            padding-left: 4px;
+        }
+
+        .input-label .label-dot {
+            width: 6px;
+            height: 6px;
+            background: var(--china-red);
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .input-wrap {
+            position: relative;
+        }
+
+        .input-wrap input {
+            width: 100%;
+            height: clamp(52px, 13vw, 60px);
+            padding: 0 clamp(16px, 4vw, 20px);
+            background: var(--off-white);
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-md);
+            font-size: clamp(18px, 5vw, 22px);
+            text-align: center;
+            letter-spacing: clamp(3px, 1vw, 6px);
+            color: var(--text-primary);
+            font-weight: 600;
+            font-family: "SF Mono", "Roboto Mono", "Cascadia Code", monospace;
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        /* 鸿蒙/安卓数字键盘优化 */
+        .input-wrap input::-webkit-outer-spin-button,
+        .input-wrap input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        .input-wrap input:focus {
+            border-color: var(--china-red);
+            background: var(--white);
+            box-shadow: 0 0 0 4px var(--china-red-glow), var(--shadow);
+        }
+
+        .input-wrap input::placeholder {
+            color: var(--text-tertiary);
+            font-weight: 400;
+            letter-spacing: 1px;
+            font-size: clamp(14px, 3.8vw, 16px);
+        }
+
+        .input-hint {
+            font-size: clamp(11px, 3vw, 12px);
+            color: var(--text-tertiary);
+            margin-top: 6px;
+            padding-left: 4px;
+        }
+
+        /* ========== 查询按钮 ========== */
+        .btn-query {
+            width: 100%;
+            height: clamp(52px, 13vw, 60px);
+            background: linear-gradient(135deg, var(--china-red) 0%, var(--china-red-dark) 100%);
+            color: var(--white);
+            border: none;
+            border-radius: var(--radius-md);
+            font-size: clamp(16px, 4.5vw, 18px);
+            font-weight: 600;
+            letter-spacing: 4px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(196, 30, 58, 0.25);
+            transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+            margin-top: clamp(8px, 2vw, 16px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-query:active {
+            transform: scale(0.97);
+            box-shadow: 0 2px 8px rgba(196, 30, 58, 0.15);
+        }
+
+        .btn-query::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            background: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.5s, height 0.5s;
+        }
+
+        .btn-query:active::after {
+            width: 300px; height: 300px;
+        }
+
+        .btn-query .arrow {
+            font-size: clamp(14px, 3.5vw, 16px);
+            transition: transform 0.3s;
+        }
+
+        .btn-query:active .arrow {
+            transform: translateX(4px);
+        }
+
+        .spinner {
+            display: none;
+            width: 22px; height: 22px;
+            border: 2.5px solid rgba(255,255,255,0.3);
+            border-top-color: var(--white);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-query.loading .btn-text,
+        .btn-query.loading .arrow {
+            display: none;
+        }
+
+        .btn-query.loading .spinner {
+            display: block;
+        }
+
+        /* ========== 底部信息 ========== */
+        .form-footer {
+            text-align: center;
+            padding: clamp(16px, 4vw, 24px) 0;
+            margin-top: auto;
+        }
+
+        .form-footer p {
+            font-size: clamp(11px, 3vw, 12px);
+            color: var(--text-tertiary);
+            line-height: 1.6;
+        }
+
+        .form-footer .divider {
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--china-red-light), transparent);
+            margin: 12px auto;
+            border-radius: 1px;
+        }
+
+        /* ========== Toast提示 ========== */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.85);
+            background: rgba(26, 26, 26, 0.92);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            color: var(--white);
+            padding: clamp(14px, 4vw, 18px) clamp(24px, 6vw, 32px);
+            border-radius: var(--radius-md);
+            font-size: clamp(14px, 3.8vw, 16px);
+            z-index: 3000;
+            transition: all 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+            pointer-events: none;
+            white-space: nowrap;
+            opacity: 0;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.2);
+            border: 1px solid rgba(255,255,255,0.06);
+            font-weight: 500;
+        }
+
+        .toast.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        /* ========== 沉浸式图片查看器 ========== */
+        .viewer-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100dvw;
+            height: 100dvh;
+            background: #000000;
+            display: none;
+            flex-direction: column;
+            z-index: 2000;
+            opacity: 0;
+            transition: opacity 0.35s ease;
+            overflow: hidden;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+
+        .viewer-overlay.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .viewer-header {
+            position: absolute;
+            top: max(0px, env(safe-area-inset-top));
+            left: 0; right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+            z-index: 10;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.5) 0%, transparent 100%);
+        }
+
+        .viewer-header .viewer-title {
+            color: rgba(255,255,255,0.9);
+            font-size: clamp(14px, 3.8vw, 16px);
+            font-weight: 500;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .viewer-header .viewer-close {
+            width: clamp(36px, 10vw, 44px);
+            height: clamp(36px, 10vw, 44px);
+            border-radius: 50%;
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.08);
+            color: var(--white);
+            font-size: clamp(20px, 5.5vw, 24px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s;
+            flex-shrink: 0;
+        }
+
+        .viewer-header .viewer-close:active {
+            background: rgba(255,255,255,0.25);
+            transform: scale(0.9);
+        }
+
+        .viewer-body {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            touch-action: none;
+            padding: 0 clamp(12px, 3vw, 20px);
+        }
+
+        .viewer-body img {
+            max-width: 100%;
+            max-height: 78dvh;
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            border-radius: 6px;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-touch-callout: default;
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.4s ease;
+            will-change: transform;
+            opacity: 0;
+        }
+
+        .viewer-body img.loaded {
+            opacity: 1;
+        }
+
+        .viewer-skeleton {
+            position: absolute;
+            width: 70%;
+            height: 50%;
+            background: linear-gradient(90deg, rgba(255,255,255,0.03) 25%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            border-radius: 6px;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        .viewer-footer {
+            position: absolute;
+            bottom: max(12px, env(safe-area-inset-bottom));
+            left: 0; right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .viewer-footer .hint-pill {
+            background: rgba(255,255,255,0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: rgba(255,255,255,0.65);
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: clamp(11px, 3vw, 12px);
+            border: 1px solid rgba(255,255,255,0.05);
+            opacity: 0;
+            animation: fadeInHint 0.5s ease 0.3s forwards;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeInHint {
+            to { opacity: 1; }
+        }
+
+        /* ========== 小屏手机特别适配 ========== */
+        @media (max-height: 700px) {
+            .app-header {
+                padding-top: calc(env(safe-area-inset-top, 0px) + 16px);
+                padding-bottom: 24px;
+            }
+            .form-section {
+                padding-top: 20px;
+                padding-bottom: 16px;
+                gap: 14px;
+            }
+            .header-badge {
+                width: 52px;
+                height: 52px;
+                font-size: 26px;
+            }
+        }
+
+        /* ========== 超小屏（iPhone SE / 鸿蒙小屏） ========== */
+        @media (max-height: 600px) {
+            .app-header {
+                padding-top: calc(env(safe-area-inset-top, 0px) + 12px);
+                padding-bottom: 20px;
+            }
+            .app-header h1 {
+                font-size: 20px;
+            }
+            .form-section {
+                gap: 12px;
+                padding: 16px 20px;
+            }
+            .input-wrap input {
+                height: 48px;
+                font-size: 17px;
+            }
+            .btn-query {
+                height: 48px;
+            }
+        }
+
+        /* ========== 大屏手机（Pro Max / 安卓大屏） ========== */
+        @media (min-height: 850px) {
+            .form-section {
+                padding-top: 40px;
+                padding-bottom: 32px;
+                gap: 28px;
+            }
+            .app-header {
+                padding-bottom: 40px;
+            }
+        }
+
+        /* ========== 横屏提示 ========== */
+        @media (orientation: landscape) and (max-height: 500px) {
+            .app-shell {
+                flex-direction: row;
+            }
+            .app-header {
+                width: 40%;
+                min-height: 100dvh;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                padding-bottom: 20px;
+            }
+            .form-section {
+                width: 60%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="status-bar"></div>
+
+    <div class="app-shell">
+        <!-- 头部 -->
+        <header class="app-header">
+            <div class="header-badge">📜</div>
+            <h1>证书查询平台</h1>
+            <p class="subtitle">Certificate Verification System</p>
+        </header>
+
+        <!-- 表单 -->
+        <section class="form-section">
+            <div class="input-group">
+                <div class="input-label">
+                    <span class="label-dot"></span>
+                    <span>请输入11位证书编号</span>
+                </div>
+                <div class="input-wrap">
+                    <input type="number" id="certNum" placeholder="11位数字编号" 
+                           inputmode="numeric" pattern="[0-9]*" maxlength="11"
+                           oninput="if(this.value.length>11)this.value=this.value.slice(0,11)">
+                </div>
+                <p class="input-hint">编号为11位纯数字</p>
+            </div>
+
+            <div class="input-group">
+                <div class="input-label">
+                    <span class="label-dot"></span>
+                    <span>请输入6位验证码</span>
+                </div>
+                <div class="input-wrap">
+                    <input type="number" id="verifyCode" placeholder="6位数字验证码" 
+                           inputmode="numeric" pattern="[0-9]*" maxlength="6"
+                           oninput="if(this.value.length>6)this.value=this.value.slice(0,6)">
+                </div>
+                <p class="input-hint">验证码为6位纯数字</p>
+            </div>
+
+            <button class="btn-query" id="queryBtn" onclick="handleQuery()">
+                <span class="btn-text">立即查询</span>
+                <span class="arrow">›</span>
+                <div class="spinner"></div>
+            </button>
+
+            <div class="form-footer">
+                <div class="divider"></div>
+                <p>请确保证书编号与验证码完全匹配<br>如有疑问请联系管理员</p>
+            </div>
+        </section>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- 图片查看器 -->
+    <div class="viewer-overlay" id="viewer">
+        <div class="viewer-header">
+            <div class="viewer-title">📜 证书查询结果</div>
+            <div class="viewer-close" onclick="closeViewer()">×</div>
+        </div>
+        <div class="viewer-body" id="viewerBody">
+            <div class="viewer-skeleton" id="viewerSkeleton"></div>
+            <img id="certImage" src="" alt="证书图片" draggable="false">
+        </div>
+        <div class="viewer-footer">
+            <div class="hint-pill">长按图片可保存至相册</div>
+            <div class="hint-pill" style="animation-delay: 0.5s;">双击放大 · 下滑关闭</div>
+        </div>
+    </div>
+
+    <script>
+        // 证书数据库
+        const certDB = {
+            "00123456780-532712": "00123456780-532712",
+            "00123456780-901426": "00123456780-901426",
+            "00123456781-178487": "00123456781-178487",
+            "00123456781-810315": "00123456781-810315",
+            "00123456782-265898": "00123456782-265898",
+            "00123456782-729204": "00123456782-729204",
+            "00123456783-621823": "00123456783-621823",
+            "00123456783-638193": "00123456783-638193",
+            "00123456784-086376": "00123456784-086376",
+            "00123456784-547082": "00123456784-547082",
+            "00123456785-456971": "00123456785-456971",
+            "00123456785-801045": "00123456785-801045",
+            "00123456786-365890": "00123456786-365890",
+            "00123456786-912156": "00123456786-912156",
+            "00123456787-274969": "00123456787-274969",
+            "00123456787-710934": "00123456787-710934",
+            "00123456788-189758": "00123456788-189758",
+            "00123456788-354589": "00123456788-354589",
+            "00123456789-093647": "00123456789-093647",
+            "00123456789-443601": "00123456789-443601"
+        };
+
+        // 回车触发
+        document.getElementById('verifyCode').addEventListener('keypress', e => {
+            if (e.key === 'Enter') handleQuery();
+        });
+        document.getElementById('certNum').addEventListener('keypress', e => {
+            if (e.key === 'Enter') document.getElementById('verifyCode').focus();
+        });
+
+        // 自动聚焦 + 滚轮处理
+        window.addEventListener('load', () => {
+            document.getElementById('certNum').focus();
+        });
+        document.addEventListener('wheel', e => {
+            if (document.activeElement.type === 'number') document.activeElement.blur();
+        });
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        }
+
+        function handleQuery() {
+            const num = document.getElementById('certNum').value.trim();
+            const code = document.getElementById('verifyCode').value.trim();
+            const btn = document.getElementById('queryBtn');
+
+            if (!num || !code) {
+                showToast('请输入证书编号和验证码');
+                return;
+            }
+            if (num.length !== 11 || code.length !== 6) {
+                showToast('请输入正确的证书编号和验证码');
+                return;
+            }
+
+            btn.classList.add('loading');
+
+            setTimeout(() => {
+                btn.classList.remove('loading');
+                const key = num + '-' + code;
+                const imgName = certDB[key];
+
+                if (!imgName) {
+                    showToast('请输入正确的证书编号和验证码');
+                    return;
+                }
+                openViewer(imgName);
+            }, 700);
+        }
+
+        // ===== 图片查看器 =====
+        const viewer = document.getElementById('viewer');
+        const certImage = document.getElementById('certImage');
+        const skeleton = document.getElementById('viewerSkeleton');
+        let scale = 1, isDragging = false, startY = 0, currentY = 0;
+
+        function openViewer(imgName) {
+            certImage.src = 'images/' + imgName + '.jpg';
+            certImage.classList.remove('loaded');
+            scale = 1;
+            certImage.style.transform = 'scale(1)';
+            skeleton.style.display = 'block';
+            viewer.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        certImage.onload = () => {
+            skeleton.style.display = 'none';
+            certImage.classList.add('loaded');
+        };
+
+        function closeViewer() {
+            viewer.classList.remove('active');
+            document.body.style.overflow = '';
+            scale = 1;
+            setTimeout(() => { certImage.src = ''; certImage.classList.remove('loaded'); }, 350);
+        }
+
+        // 双击缩放
+        certImage.addEventListener('dblclick', e => {
+            e.stopPropagation();
+            scale = scale === 1 ? 2.5 : 1;
+            certImage.style.transform = 'scale(' + scale + ')';
+        });
+
+        // 触摸手势：下滑关闭
+        const viewerBody = document.getElementById('viewerBody');
+
+        viewerBody.addEventListener('touchstart', e => {
+            if (e.touches.length === 1 && scale === 1) {
+                isDragging = true;
+                startY = e.touches[0].clientY;
+                currentY = 0;
+                certImage.style.transition = 'none';
+            }
+        }, { passive: true });
+
+        viewerBody.addEventListener('touchmove', e => {
+            if (!isDragging || scale !== 1) return;
+            const y = e.touches[0].clientY;
+            currentY = y - startY;
+            if (currentY > 0) {
+                viewer.style.opacity = Math.max(0, 1 - currentY / 350);
+                certImage.style.transform = 'translateY(' + (currentY * 0.4) + 'px)';
+            }
+        }, { passive: true });
+
+        viewerBody.addEventListener('touchend', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            certImage.style.transition = 'transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s';
+
+            if (currentY > 100) {
+                closeViewer();
+                setTimeout(() => { viewer.style.opacity = ''; certImage.style.transform = ''; }, 350);
+            } else {
+                viewer.style.opacity = '1';
+                certImage.style.transform = 'translateY(0)';
+            }
+        });
+
+        // 点击背景关闭
+        viewer.addEventListener('click', e => {
+            if (e.target === viewer || e.target === viewerBody) closeViewer();
+        });
+    </script>
+</body>
+</html>
